@@ -314,6 +314,5 @@ waterfall([
         } else {
             debug('Completed');
         }
-        process.exit(0); // there's still something keeping the event loop open, not sure what it is yet
     }
 });
