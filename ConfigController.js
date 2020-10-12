@@ -42,10 +42,12 @@ class ConfigController {
     const f = this.resolve(userConfigFile);
     this.readYaml(f, { silentReadFailure: true }, (err, res) => {
       if (err) {
-        this.writeYaml(f, defaultUserConfig, (err) => {
-          if (err) debug('Unable to initialize User config file %s', f);
-          cb(err, defaultUserConfig);
-        });
+        this.writeYaml(f, defaultUserConfig)
+          .then(() => cb(null, defaultUserConfig))
+          .catch(writeErr => {
+            debug('Unable to initialize User config file %s', f);
+            cb(writeErr, defaultUserConfig);
+          });
       } else {
         cb(null, res);
       }
@@ -166,7 +168,7 @@ class ConfigController {
 
   writeUserFile(filename, cb) {
     // Write user configuration to filename
-    ConfigController.writeYaml(ConfigController.resolve(filename), this.userConfig(), cb);
+    ConfigController.writeYaml(ConfigController.resolve(filename), this.userConfig()).then(cb, cb);
   }
 
   setAndWriteUserFile(filename, obj, cb) {
@@ -177,20 +179,21 @@ class ConfigController {
     this.setOpts(obj); // Merge into combined options
     // By now sendInfo will send correct result back
     // And write to user's file
-    ConfigController.writeYaml(ConfigController.resolve(filename), obj, cb);
+    ConfigController.writeYaml(ConfigController.resolve(filename), obj).then(cb, cb);
   }
 
-  static writeYaml(filename, obj, cb) {
-    // Write yaml version of an object to a file
+  /**
+   * Write yaml version of an object to a file
+   * @param {string} filename
+   * @param {*} obj
+   */
+  static async writeYaml(filename, obj) {
     try {
-      const y = yaml.safeDump(obj);
-      fs.writeFile(filename, y, { encoding: 'utf8' }, (err) => {
-        if (err) { debug('Unable to write yaml to %s: %s', filename, err.message); }
-        cb(err);
-      });
-    } catch (err) { // Typically a yaml dump error
-      debug('ERROR unable to write yaml from %O', obj);
-      cb(err);
+      const yamlstr = yaml.safeDump(obj);
+      await fs.promises.writeFile(filename, yamlstr, { encoding: 'utf8' });
+    } catch (err) {
+      debug('ERROR unable to write yaml from %O to %s: %s', obj, filename, err.message);
+      throw err;
     }
   }
 }
