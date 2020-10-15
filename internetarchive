@@ -307,7 +307,7 @@ waterfall([
         if (!opts.server) { DwebTransports.p_stop(cb); } else { cb(null); }}
 ],(err) => {
     if (err) {
-        debug("Failed: %s", err.message)
+        console.error(err)
     } else {
         if (server) {
             debug('Completed, but server still running');

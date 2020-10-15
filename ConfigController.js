@@ -9,6 +9,7 @@ const asyncMap = require('async/map');
 const yaml = require('js-yaml'); // https://www.npmjs.com/package/js-yaml
 // noinspection JSUnusedLocalSymbols
 const { ObjectDeeperAssign } = require('@internetarchive/dweb-archivecontroller');
+const ono = require('ono');
 
 class ConfigController {
   /*
@@ -167,10 +168,12 @@ class ConfigController {
 
 
   writeUserFile(filename, cb) {
+    // TODO: test
     // Write user configuration to filename
     ConfigController.writeYaml(ConfigController.resolve(filename), this.userConfig()).then(cb, cb);
   }
 
+  // TODO: test
   setAndWriteUserFile(filename, obj, cb) {
     // Set local configuration in ConfigManager and write to user file
     // obj to replace userconfig
@@ -192,8 +195,7 @@ class ConfigController {
       const yamlstr = yaml.safeDump(obj);
       await fs.promises.writeFile(filename, yamlstr, { encoding: 'utf8' });
     } catch (err) {
-      debug('ERROR unable to write yaml from %O to %s: %s', obj, filename, err.message);
-      throw err;
+      throw ono(err, { obj, filename }, 'Unable to write yaml obj to file');
     }
   }
 }

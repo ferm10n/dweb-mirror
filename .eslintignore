@@ -5,3 +5,6 @@ packages/*/node_modules
 packages/*/lib
 packages/*/dist
 packages/*/build
+
+*
+!ConfigController.js
